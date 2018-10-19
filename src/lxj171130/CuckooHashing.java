@@ -1,21 +1,21 @@
 package lxj171130;
 
-public class CuckooHashing {
+public class CuckooHashing<T> {
 	
 	int tableNum;
 	int maxLocations;
 	int numHashFunctions;
-	int[][] table;
-	int minIntValue = Integer.MIN_VALUE;
+	Object[][] table;
+	Object minIntValue = Integer.MIN_VALUE;
 	int threshold;
 	
 	
 	public CuckooHashing() {
 		tableNum = 1;
-		maxLocations = 100;
+		maxLocations = 1048576; //power of 2, 2^20
 		numHashFunctions = 2;
 		threshold = maxLocations;
-		table = new int[tableNum][maxLocations];
+		table = new Object[tableNum][maxLocations];
 		for(int i=0; i<tableNum; i++) {
 			for(int j=0; j<maxLocations; j++) {
 				table[i][j] = minIntValue;
@@ -23,38 +23,50 @@ public class CuckooHashing {
 		}
 	}
 	
-	private int hashCode(int i, int key) {
+	private int hashCodeCuckoo(int i, T x) {
 		switch(i) {
 			case 1:
-				return key % maxLocations;
+				return indexFor(hash(x.hashCode()), maxLocations);
 			default:
-				return (key / maxLocations) % maxLocations;
+				return 1 + x.hashCode() %9;
 		}
 	}
 	
-	public boolean add(int x) {
+	private int indexFor(int h, int length) { // length = table.length is a power of 2
+		return h & (length-1);
+	}
+	
+	private int hash(int h) {
+		// This function ensures that hashCodes that differ only by
+		// constant multiples at each bit position have a bounded
+		// number of collisions (approximately 8 at default load factor).
+		h ^= (h >>> 20) ^ (h >>> 12);
+		return h ^ (h >>> 7) ^ (h >>> 4);
+	}
+	
+	public boolean add(T x) {
 		for(int i=1; i<=numHashFunctions; i++ ) {
-			if(table[0][hashCode(i,x)] == x) {
+			if(table[0][hashCodeCuckoo(i,x)].equals(x)) {
 				return false;
 			}
 		}
 		for(int i=1; i<=numHashFunctions; i++ ) {
-			if(table[0][hashCode(i,x)] == minIntValue) {
-				table[0][hashCode(i,x)] = x;
+			if(table[0][hashCodeCuckoo(i,x)].equals(minIntValue)) {
+				table[0][hashCodeCuckoo(i,x)] = x;
 				return true;
 			}
 		}
 		int i = 1;
 		int count = 1;
 		while(count++ < threshold) {
-			int location = hashCode(i,x);
+			int location = hashCodeCuckoo(i,x);
 			if(table[0][location] == minIntValue) {
 				table[0][location] = x;
 				return true;
 			}
 			else {
-				int temp = x;
-				x = table[0][location];
+				Object temp = x;
+				x = (T) table[0][location];
 				table[0][location] = temp;
 			}
 			i = i == numHashFunctions ? 1 : (i+1);
@@ -64,20 +76,20 @@ public class CuckooHashing {
 		return false;
 	}
 	
-	public boolean contains(int x) {
+	public boolean contains(T x) {
 		for(int i=1; i<=numHashFunctions; i++ ) {
-			if(table[0][hashCode(i,x)] == x) {
+			if(table[0][hashCodeCuckoo(i,x)].equals(x)) {
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	public Object remove(int x) {
+	public Object remove(T x) {
 		if(contains(x)) {
 			for(int i=1; i<=numHashFunctions; i++ ) {
-				if(table[0][hashCode(i,x)] == x) {
-					table[0][hashCode(i,x)] = minIntValue;
+				if(table[0][hashCodeCuckoo(i,x)].equals(x)) {
+					table[0][hashCodeCuckoo(i,x)] = minIntValue;
 					return x;
 				}
 			}
@@ -89,16 +101,16 @@ public class CuckooHashing {
 	}
 
 	public static void main(String[] args) {
-		CuckooHashing ch = new CuckooHashing();
-		System.out.println(ch.add(5));
-		System.out.println(ch.add(8));
-		System.out.println(ch.add(2));
-		System.out.println(ch.contains(5));
-		System.out.println(ch.add(5));
-		System.out.println(ch.remove(5));
-		System.out.println(ch.add(9));
-		System.out.println(ch.contains(9));
-		System.out.println(ch.contains(0));	
+		CuckooHashing<String> ch = new CuckooHashing<>();
+		System.out.println(ch.add("hello"));
+		System.out.println(ch.add("how"));
+		System.out.println(ch.add("are"));
+		System.out.println(ch.contains("are"));
+		System.out.println(ch.add("are"));
+		System.out.println(ch.remove("are"));
+		System.out.println(ch.add("you"));
+		System.out.println(ch.contains("you"));
+		System.out.println(ch.contains("?"));	
 		
 	}
 
