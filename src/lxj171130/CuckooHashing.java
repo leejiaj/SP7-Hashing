@@ -1,5 +1,9 @@
 package lxj171130;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
 public class CuckooHashing<T> {
 	
 	int tableNum;
@@ -28,7 +32,7 @@ public class CuckooHashing<T> {
 			case 1:
 				return indexFor(hash(x.hashCode()), maxLocations);
 			default:
-				return 1 + x.hashCode() %9;
+				return 1 + x.hashCode() % 9;
 		}
 	}
 	
@@ -99,19 +103,4 @@ public class CuckooHashing<T> {
 		}
 		return null;
 	}
-
-	public static void main(String[] args) {
-		CuckooHashing<String> ch = new CuckooHashing<>();
-		System.out.println(ch.add("hello"));
-		System.out.println(ch.add("how"));
-		System.out.println(ch.add("are"));
-		System.out.println(ch.contains("are"));
-		System.out.println(ch.add("are"));
-		System.out.println(ch.remove("are"));
-		System.out.println(ch.add("you"));
-		System.out.println(ch.contains("you"));
-		System.out.println(ch.contains("?"));	
-		
-	}
-
 }
