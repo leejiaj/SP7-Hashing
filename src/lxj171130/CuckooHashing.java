@@ -16,9 +16,9 @@ public class CuckooHashing<T> {
 	
 	public CuckooHashing() {
 		tableNum = 1;
-		maxLocations = 1048576; //power of 2, 2^20
+		maxLocations = 4194304; //power of 2, 2^22
 		numHashFunctions = 2;
-		threshold = maxLocations;
+		threshold = maxLocations/2;
 		table = new Object[tableNum][maxLocations];
 		for(int i=0; i<tableNum; i++) {
 			for(int j=0; j<maxLocations; j++) {
@@ -76,7 +76,15 @@ public class CuckooHashing<T> {
 			i = i == numHashFunctions ? 1 : (i+1);
 			count++;
 		}
-		System.out.println("Rebuild hash table with new hash functions");
+		//Rebuild hash table with new hash functions;
+		maxLocations = 2 * maxLocations;
+		Object[][] table1 = new Object[tableNum][maxLocations];
+		for(int i1=0; i1<tableNum; i1++) {
+			for(int j=0; j<maxLocations/2; j++) {
+				table1[i1][j] = table[i1][j];
+			}
+		}
+		table = table1;
 		return false;
 	}
 	
